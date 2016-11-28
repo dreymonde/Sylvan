@@ -84,6 +84,18 @@ extension Provider {
                                                            set: { try self._set(inputTransform($0)) })
     }
     
+    public func cached(_ outputTransform: @escaping (OutputValue) -> InputValue) -> CachedProvider<OutputValue> {
+        return CachedProvider<OutputValue>(get: self._get, set: { try self._set(outputTransform($0)) })
+    }
+    
+}
+
+public extension CachedProvider {
+    
+    convenience init(provider: IdenticalProvider<Value>) {
+        self.init(get: provider._get, set: provider._set)
+    }
+    
 }
 
 public enum Providers { }

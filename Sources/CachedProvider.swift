@@ -27,9 +27,9 @@ import Foundation
 public class CachedProvider<Value> {
     
     fileprivate var _get: () -> Value
-    fileprivate var _set: (Value) -> ()
+    fileprivate var _set: (Value) throws -> ()
     
-    public init(get: @escaping () -> Value, set: @escaping (Value) -> ()) {
+    public init(get: @escaping () -> Value, set: @escaping (Value) throws -> ()) {
         self._get = get
         self._set = set
     }
@@ -62,16 +62,22 @@ public class CachedProvider<Value> {
         cachedValue = nil
     }
     
-    public func set(_ value: Value, toCacheOnly: Bool = false) {
+    public func set(_ value: Value, toCacheOnly: Bool = false) throws {
         cachedValue = value
         if !toCacheOnly {
-            _set(value)
+            try _set(value)
         }
     }
     
-    public func pushCache() {
+    public func ungaranteedSet(_ value: Value, toCacheOnly: Bool = false) {
+        do {
+            try set(value, toCacheOnly: toCacheOnly)
+        } catch { }
+    }
+    
+    public func pushCache() throws {
         if let cachedValue = cachedValue {
-            self._set(cachedValue)
+            try self._set(cachedValue)
         }
     }
     
