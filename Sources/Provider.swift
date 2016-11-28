@@ -24,25 +24,31 @@
 
 import Foundation
 
-public struct Provider<Value> {
+public struct Provider<OutputValue, InputValue> {
     
-    fileprivate let _get: () -> Value
-    fileprivate let _set: (Value) -> ()
+    fileprivate let _get: () -> OutputValue
+    fileprivate let _set: (InputValue) throws -> ()
     
-    public init(get: @escaping () -> Value, set: @escaping (Value) -> ()) {
+    public init(get: @escaping () -> OutputValue, set: @escaping (InputValue) throws -> ()) {
         self._get = get
         self._set = set
     }
     
-    public func get() -> Value {
+    public func get() -> OutputValue {
         return _get()
     }
     
-    public func set(_ value: Value) {
-        _set(value)
+    public func set(_ value: InputValue) throws {
+        return try _set(value)
     }
     
-    public var value: Value {
+    public func ungaranteedSet(_ value: InputValue) {
+        do {
+            try _set(value)
+        } catch { }
+    }
+    
+    public var value: OutputValue {
         get {
             return get()
         }
@@ -50,31 +56,44 @@ public struct Provider<Value> {
     
 }
 
-public enum Providers { }
+public typealias IdenticalProvider<Value> = Provider<Value, Value>
 
-extension Providers {
+extension Provider {
     
-    public static func userDefaults(userDefaults: UserDefaults, storingKey: String) -> Provider<[String: Any]?> {
-        let get: () -> [String: Any]? = {
-            return userDefaults.dictionary(forKey: storingKey)
-        }
-        let set: ([String: Any]?) -> () = { dict in
-            if let dict = dict {
-                userDefaults.set(dict, forKey: storingKey)
-            }
-        }
-        return Provider(get: get, set: set)
+//
+//    public func async(dispatchQueue: DispatchQueue) -> AsyncProvider<Value> {
+//        return AsyncProvider(syncProvider: self, dispatchQueue: dispatchQueue)
+//    }
+    
+    public func mapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue) -> Provider<OutputValue, OtherInputValue> {
+        return Provider<OutputValue, OtherInputValue>(get: self._get,
+                                                      set: { try self._set(transform($0)) })
     }
     
-    public static func inMemory<Value>(initial: Value) -> Provider<Value> {
-        let box = Box<Value>(value: initial)
-        let get: () -> Value = {
-            return box.value
-        }
-        let set: (Value) -> () = { value in
-            box.value = value
-        }
-        return Provider(get: get, set: set)
+    public func flatMapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue?) -> Provider<OutputValue, OtherInputValue> {
+        return Provider<OutputValue, OtherInputValue>(get: self._get,
+                                                      set: { try self._set(try transform($0).tryUnwrap()) })
+    }
+    
+    public func mapOutput<OtherOutputValue>(_ transform: @escaping (OutputValue) -> OtherOutputValue) -> Provider<OtherOutputValue, InputValue> {
+        return Provider<OtherOutputValue, InputValue>(get: { transform(self._get()) },
+                                                      set: self._set)
+    }
+    
+    public func map<OtherOutputValue, OtherInputValue>(outputTransform: @escaping (OutputValue) -> OtherOutputValue, inputTransform: @escaping (OtherInputValue) -> InputValue) -> Provider<OtherOutputValue, OtherInputValue> {
+        return Provider<OtherOutputValue, OtherInputValue>(get: { outputTransform(self._get()) },
+                                                           set: { try self._set(inputTransform($0)) })
+    }
+    
+}
+
+public enum Providers { }
+
+public extension Providers {
+    
+    static func inMemory<Value>(initial: Value) -> IdenticalProvider<Value> {
+        let box = Box(value: initial)
+        return IdenticalProvider<Value>(get: { return box.value }, set: { box.value = $0 })
     }
     
 }
@@ -84,16 +103,4 @@ internal class Box<Value> {
     init(value: Value) {
         self.value = value
     }
-}
-
-extension Provider {
-    
-    public func map<OtherValue>(_ transform: Transformer<Value, OtherValue>) -> Provider<OtherValue> {
-        return Provider<OtherValue>(get: { () -> OtherValue in
-            return transform.from(self.value)
-        }, set: { (otherValue) in
-            self.set(transform.to(otherValue))
-        })
-    }
-    
 }

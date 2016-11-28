@@ -32,6 +32,22 @@ public struct Transformer<A, B> {
         self.to = to
     }
     
+    public var reversed: Transformer<B, A> {
+        return Transformer<B, A>(from: self.to, to: self.from)
+    }
+    
+}
+
+public struct OptionalTransformer<A, B> {
+    
+    public let from: (A) -> B?
+    public let to: (B) -> A
+    
+    public init(from: @escaping (A) -> B?, to: @escaping (B) -> A) {
+        self.from = from
+        self.to = to
+    }
+    
 }
 
 public enum Transformers { }

@@ -35,6 +35,21 @@ public struct AsyncProvider<Value> {
         self._set = set
     }
     
+//    public init(syncProvider: Provider<Value>, dispatchQueue: DispatchQueue) {
+//        self._get = { completion in
+//            dispatchQueue.async {
+//                let value = syncProvider.get()
+//                completion(value)
+//            }
+//        }
+//        self._set = { value, completion in
+//            dispatchQueue.async {
+//                syncProvider.set(value)
+//                completion()
+//            }
+//        }
+//    }
+    
     public func get(completion: @escaping (Value) -> ()) {
         _get(completion)
     }
@@ -45,47 +60,15 @@ public struct AsyncProvider<Value> {
     
 }
 
-public extension AsyncProvider {
-    
-    func map<OtherValue>(_ transform: Transformer<Value, OtherValue>) -> AsyncProvider<OtherValue> {
-        return AsyncProvider<OtherValue>(get: { (completion) in
-            self.get(completion: { completion(transform.from($0)) })
-        }, set: { (value, completion) in
-            self.set(transform.to(value), completion: completion)
-        })
-    }
-    
-}
-
-public enum AsyncProviders { }
-
-extension AsyncProviders {
-    
-    public static func userDefaults(userDefaults: UserDefaults = .standard,
-                                    storingKey: String,
-                                    dispatchQueue: DispatchQueue) -> AsyncProvider<[String: Any]?> {
-        return AsyncProvider<[String: Any]?>(get: { (completion) in
-            dispatchQueue.async {
-                let dictionary = userDefaults.dictionary(forKey: storingKey)
-                completion(dictionary)
-            }
-        }, set: { (value, completion) in
-            dispatchQueue.async {
-                userDefaults.set(value, forKey: storingKey)
-                completion()
-            }
-        })
-    }
-    
-    public static func inMemory<Value>(initial: Value) -> AsyncProvider<Value> {
-        let box = Box(value: initial)
-        return AsyncProvider(get: { (completion) in
-            completion(box.value)
-        }, set: { (value, completion) in
-            box.value = value
-            completion()
-        })
-    }
-    
-}
+//public extension AsyncProvider {
+//    
+//    func map<OtherValue>(_ transform: Transformer<Value, OtherValue>) -> AsyncProvider<OtherValue> {
+//        return AsyncProvider<OtherValue>(get: { (completion) in
+//            self.get(completion: { completion(transform.from($0)) })
+//        }, set: { (value, completion) in
+//            self.set(transform.to(value), completion: completion)
+//        })
+//    }
+//    
+//}
 

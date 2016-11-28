@@ -32,6 +32,23 @@ class SylvanTests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct results.
         //// XCTAssertEqual(Sylvan().text, "Hello, World!")
     }
+    
+    func testInMemoryBasic() {
+        let provider = Providers.inMemory(initial: 10)
+        provider.ungaranteedSet(15)
+        XCTAssertEqual(provider.get(), 15)
+    }
+    
+    func testMap() {
+        let intProvider = Providers.inMemory(initial: 10)
+        let stringProvider = intProvider
+            .flatMapInput({ Int($0) })
+            .mapOutput({ String($0) })
+        stringProvider.ungaranteedSet("19")
+        XCTAssertEqual(stringProvider.get(), "19")
+        XCTAssertThrowsError(try stringProvider.set("Alba"))
+    }
+    
 }
 
 #if os(Linux)
