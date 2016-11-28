@@ -17,6 +17,10 @@
 		7C03F7381DEC81B10003B3E2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C03F7361DEC81B10003B3E2 /* Extensions.swift */; };
 		7C03F7391DEC81B10003B3E2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C03F7361DEC81B10003B3E2 /* Extensions.swift */; };
 		7C03F73A1DEC81B10003B3E2 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C03F7361DEC81B10003B3E2 /* Extensions.swift */; };
+		7C03F73C1DEC8D070003B3E2 /* Polygon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C03F73B1DEC8D070003B3E2 /* Polygon.swift */; };
+		7C03F73D1DEC8D070003B3E2 /* Polygon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C03F73B1DEC8D070003B3E2 /* Polygon.swift */; };
+		7C03F73E1DEC8D070003B3E2 /* Polygon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C03F73B1DEC8D070003B3E2 /* Polygon.swift */; };
+		7C03F73F1DEC8D070003B3E2 /* Polygon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C03F73B1DEC8D070003B3E2 /* Polygon.swift */; };
 		7CACC1571DEB5A6D0039710E /* AsyncProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CACC1521DEB5A6D0039710E /* AsyncProvider.swift */; };
 		7CACC1581DEB5A6D0039710E /* AsyncProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CACC1521DEB5A6D0039710E /* AsyncProvider.swift */; };
 		7CACC1591DEB5A6D0039710E /* AsyncProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CACC1521DEB5A6D0039710E /* AsyncProvider.swift */; };
@@ -76,6 +80,7 @@
 		52D6D9F01BEFFFBE002C0205 /* Sylvan.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Sylvan.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D6DA0F1BF000BD002C0205 /* Sylvan.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Sylvan.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C03F7361DEC81B10003B3E2 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = Sources/Extensions.swift; sourceTree = "<group>"; };
+		7C03F73B1DEC8D070003B3E2 /* Polygon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Polygon.swift; path = Sources/Polygon.swift; sourceTree = "<group>"; };
 		7CACC1521DEB5A6D0039710E /* AsyncProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AsyncProvider.swift; path = Sources/AsyncProvider.swift; sourceTree = "<group>"; };
 		7CACC1531DEB5A6D0039710E /* CachedAsyncProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CachedAsyncProvider.swift; path = Sources/CachedAsyncProvider.swift; sourceTree = "<group>"; };
 		7CACC1541DEB5A6D0039710E /* CachedProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CachedProvider.swift; path = Sources/CachedProvider.swift; sourceTree = "<group>"; };
@@ -186,6 +191,7 @@
 				7CACC1531DEB5A6D0039710E /* CachedAsyncProvider.swift */,
 				7CACC1561DEB5A6D0039710E /* Transformer.swift */,
 				7C03F7361DEC81B10003B3E2 /* Extensions.swift */,
+				7C03F73B1DEC8D070003B3E2 /* Polygon.swift */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -486,6 +492,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C03F73C1DEC8D070003B3E2 /* Polygon.swift in Sources */,
 				7CACC15B1DEB5A6D0039710E /* CachedAsyncProvider.swift in Sources */,
 				7CACC1671DEB5A6D0039710E /* Transformer.swift in Sources */,
 				52D6D9981BEFF375002C0205 /* Sylvan.swift in Sources */,
@@ -508,6 +515,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C03F73E1DEC8D070003B3E2 /* Polygon.swift in Sources */,
 				7CACC15D1DEB5A6D0039710E /* CachedAsyncProvider.swift in Sources */,
 				7CACC1691DEB5A6D0039710E /* Transformer.swift in Sources */,
 				52D6D9EA1BEFFFA4002C0205 /* Sylvan.swift in Sources */,
@@ -522,6 +530,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C03F73F1DEC8D070003B3E2 /* Polygon.swift in Sources */,
 				7CACC15E1DEB5A6D0039710E /* CachedAsyncProvider.swift in Sources */,
 				7CACC16A1DEB5A6D0039710E /* Transformer.swift in Sources */,
 				52D6DA091BF00081002C0205 /* Sylvan.swift in Sources */,
@@ -536,6 +545,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C03F73D1DEC8D070003B3E2 /* Polygon.swift in Sources */,
 				7CACC15C1DEB5A6D0039710E /* CachedAsyncProvider.swift in Sources */,
 				7CACC1681DEB5A6D0039710E /* Transformer.swift in Sources */,
 				52D6DA261BF00118002C0205 /* Sylvan.swift in Sources */,

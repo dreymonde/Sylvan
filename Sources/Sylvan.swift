@@ -22,4 +22,23 @@
  *  SOFTWARE.
  */
 
-// you're cool
+public protocol ProviderProtocol {
+    
+    associatedtype OutputValue
+    associatedtype InputValue
+    
+    func get() -> OutputValue
+    
+    func set(_ value: InputValue) throws
+    
+    var provider: Provider<OutputValue, InputValue> { get }
+    
+}
+
+extension ProviderProtocol {
+    
+    public var provider: Provider<OutputValue, InputValue> {
+        return Provider(get: self.get, set: self.set)
+    }
+    
+}
