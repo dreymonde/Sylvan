@@ -60,10 +60,9 @@ public typealias IdenticalProvider<Value> = Provider<Value, Value>
 
 extension Provider {
     
-//
-//    public func async(dispatchQueue: DispatchQueue) -> AsyncProvider<Value> {
-//        return AsyncProvider(syncProvider: self, dispatchQueue: dispatchQueue)
-//    }
+    public func async(dispatchQueue: DispatchQueue) -> AsyncProvider<OutputValue, InputValue> {
+        return AsyncProvider(syncProvider: self, dispatchQueue: dispatchQueue)
+    }
     
     public func mapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue) -> Provider<OutputValue, OtherInputValue> {
         return Provider<OutputValue, OtherInputValue>(get: self._get,

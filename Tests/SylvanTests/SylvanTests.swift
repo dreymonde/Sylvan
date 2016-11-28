@@ -49,6 +49,38 @@ class SylvanTests: XCTestCase {
         XCTAssertThrowsError(try stringProvider.set("Alba"))
     }
     
+    func testInMemoryBasicAsync() {
+        let provider = Providers.inMemory(initial: 10).async(dispatchQueue: .global())
+        let expectation = self.expectation(description: "onprovider")
+        provider.ungaranteedSet(15) {
+            provider.get { number in
+                XCTAssertEqual(number, 15)
+                expectation.fulfill()
+            }
+        }
+        waitForExpectations(timeout: 5.0)
+    }
+    
+    func testMapAsync() {
+        let intProvider = Providers.inMemory(initial: 10).async(dispatchQueue: .global())
+        let stringProvider = intProvider
+            .flatMapInput({ Int($0) })
+            .mapOutput({ String($0) })
+        let expectation = self.expectation(description: "onprov")
+        stringProvider.ungaranteedSet("19") {
+            stringProvider.get { string in
+                XCTAssertEqual(string, "19")
+                expectation.fulfill()
+            }
+        }
+        let expectation2 = self.expectation(description: "onprov2")
+        stringProvider.set("Alba") { error in
+            XCTAssertNotNil(error)
+            expectation2.fulfill()
+        }
+        waitForExpectations(timeout: 5.0)
+    }
+    
 }
 
 #if os(Linux)
