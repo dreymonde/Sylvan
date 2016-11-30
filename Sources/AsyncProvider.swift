@@ -24,25 +24,85 @@
 
 import Foundation
 
+public struct AsyncOutputProvider<Value> {
+    
+    public typealias AsyncGet = (@escaping (Value) -> ()) -> Void
+    
+    fileprivate let _get: AsyncGet
+    
+    public init(_ get: @escaping AsyncGet) {
+        self._get = get
+    }
+    
+    public func get(completion: @escaping (Value) -> ()) {
+        _get(completion)
+    }
+    
+}
+
+public extension AsyncOutputProvider {
+    
+    func map<OtherValue>(_ transform: @escaping (Value) -> OtherValue) -> AsyncOutputProvider<OtherValue> {
+        return AsyncOutputProvider<OtherValue>({ (completion) in
+            self.get(completion: { (value) in
+                completion(transform(value))
+            })
+        })
+    }
+    
+}
+
+public struct AsyncInputProvider<Value> {
+    
+    public typealias AsyncSet = ((Value), @escaping (Error?) -> ()) -> Void
+    
+    fileprivate let _set: AsyncSet
+    
+    public init(_ set: @escaping AsyncSet) {
+        self._set = set
+    }
+    
+    public func set(_ value: Value, completion: @escaping (Error?) -> () = { _ in }) {
+        _set(value, completion)
+    }
+    
+}
+
+public extension AsyncInputProvider {
+    
+    func map<OtherValue>(_ transform: @escaping (OtherValue) -> Value) -> AsyncInputProvider<OtherValue> {
+        return AsyncInputProvider<OtherValue>({ (otherValue, completion) in
+            self.set(transform(otherValue), completion: completion)
+        })
+    }
+    
+}
+
 public struct AsyncProvider<OutputValue, InputValue> {
     
-    fileprivate let _get: (@escaping (OutputValue) -> ()) -> Void
-    fileprivate let _set: ((InputValue), @escaping (Error?) -> ()) -> Void
+    public let output: AsyncOutputProvider<OutputValue>
+    public let input: AsyncInputProvider<InputValue>
+    
+    public init(get: AsyncOutputProvider<OutputValue>,
+                set: AsyncInputProvider<InputValue>) {
+        self.output = get
+        self.input = set
+    }
     
     public init(get: @escaping (@escaping (OutputValue) -> ()) -> Void,
                 set: @escaping ((InputValue), @escaping (Error?) -> ()) -> Void) {
-        self._get = get
-        self._set = set
+        self.output = AsyncOutputProvider(get)
+        self.input = AsyncInputProvider(set)
     }
         
     public init(syncProvider: Provider<OutputValue, InputValue>, dispatchQueue: DispatchQueue) {
-        self._get = { completion in
+        self.output = AsyncOutputProvider { completion in
             dispatchQueue.async {
                 let value = syncProvider.get()
                 completion(value)
             }
         }
-        self._set = { value, completion in
+        self.input = AsyncInputProvider { value, completion in
             dispatchQueue.async {
                 do {
                     try syncProvider.set(value)
@@ -55,15 +115,11 @@ public struct AsyncProvider<OutputValue, InputValue> {
     }
     
     public func get(completion: @escaping (OutputValue) -> ()) {
-        _get(completion)
+        output.get(completion: completion)
     }
     
     public func set(_ value: InputValue, completion: @escaping (Error?) -> () = { _ in }) {
-        _set(value, completion)
-    }
-    
-    public func ungaranteedSet(_ value: InputValue, completion: @escaping () -> () = { }) {
-        _set(value, { _ in completion() })
+        input.set(value, completion: completion)
     }
     
 }
@@ -73,37 +129,27 @@ public typealias IdenticalAsyncProvider<Value> = AsyncProvider<Value, Value>
 public extension AsyncProvider {
     
     func mapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue) -> AsyncProvider<OutputValue, OtherInputValue> {
-        return AsyncProvider<OutputValue, OtherInputValue>(get: self._get,
-                                                           set: { (value, completion) in
-                                                            self._set(transform(value), completion)
-        })
+        return AsyncProvider<OutputValue, OtherInputValue>(get: output, set: input.map(transform))
     }
     
-    func flatMapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue?) -> AsyncProvider<OutputValue, OtherInputValue> {
-        return AsyncProvider<OutputValue, OtherInputValue>(get: self._get,
-                                                           set: { (value, completion) in
-                                                            do {
-                                                                let value = try transform(value).tryUnwrap()
-                                                                self._set(value, completion)
-                                                            } catch {
-                                                                completion(error)
-                                                            }
-        })
-    }
+//    func flatMapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue?) -> AsyncProvider<OutputValue, OtherInputValue> {
+//        return AsyncProvider<OutputValue, OtherInputValue>(get: self.output,
+//                                                           set: { (value, completion) in
+//                                                            do {
+//                                                                let value = try transform(value).tryUnwrap()
+//                                                                self.input(value, completion)
+//                                                            } catch {
+//                                                                completion(error)
+//                                                            }
+//        })
+//    }
     
     func mapOutput<OtherOutputValue>(_ transform: @escaping (OutputValue) -> OtherOutputValue) -> AsyncProvider<OtherOutputValue, InputValue> {
-        return AsyncProvider<OtherOutputValue, InputValue>(get: { (completion) in
-            self._get({ completion(transform($0)) })
-        },
-                                                           set: self._set)
+        return AsyncProvider<OtherOutputValue, InputValue>(get: output.map(transform), set: input)
     }
     
     func map<OtherOutputValue, OtherInputValue>(_ outputTransform: @escaping (OutputValue) -> OtherOutputValue, inputTransform: @escaping (OtherInputValue) -> InputValue) -> AsyncProvider<OtherOutputValue, OtherInputValue> {
-        return AsyncProvider<OtherOutputValue, OtherInputValue>(get: { (completion) in
-            self._get({ completion(outputTransform($0)) })
-        }, set: { (value, completion) in
-            self._set(inputTransform(value), completion)
-        })
+        return AsyncProvider<OtherOutputValue, OtherInputValue>(get: output.map(outputTransform), set: input.map(inputTransform))
     }
     
 }
@@ -111,7 +157,7 @@ public extension AsyncProvider {
 public extension CachedAsyncProvider {
     
     convenience init(provider: IdenticalAsyncProvider<Value>) {
-        self.init(get: provider._get, set: provider._set)
+        self.init(get: provider.output.get, set: provider.input.set)
     }
     
 }
