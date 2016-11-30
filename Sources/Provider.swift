@@ -93,6 +93,10 @@ public struct Provider<OutputValue, InputValue> {
         self.input = InputProvider(set)
     }
     
+    public init<Prov : ProviderProtocol>(provider: Prov) where Prov.InputValue == InputValue, Prov.OutputValue == OutputValue {
+        self.init(get: provider.get, set: provider.set)
+    }
+    
     public func get() -> OutputValue {
         return output.get()
     }
@@ -141,11 +145,7 @@ extension Provider {
     public func map<OtherOutputValue, OtherInputValue>(outputTransform: @escaping (OutputValue) -> OtherOutputValue, inputTransform: @escaping (OtherInputValue) -> InputValue) -> Provider<OtherOutputValue, OtherInputValue> {
         return Provider<OtherOutputValue, OtherInputValue>(get: output.map(outputTransform), input: input.map(inputTransform))
     }
-    
-    public func cached(_ outputTransform: @escaping (OutputValue) -> InputValue) -> CachedProvider<OutputValue> {
-        return CachedProvider<OutputValue>(get: self.get, set: { try self.set(outputTransform($0)) })
-    }
-    
+        
 }
 
 public extension CachedProvider {

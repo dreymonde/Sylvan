@@ -24,26 +24,23 @@
 
 import Foundation
 
-public protocol ProviderProtocol {
+public protocol InputProviderProtocol {
     
-    associatedtype OutputValue
     associatedtype InputValue
-    
-    func get() -> OutputValue
     
     func set(_ value: InputValue) throws
     
-    var provider: Provider<OutputValue, InputValue> { get }
+}
+
+public protocol OutputProviderProtocol {
+    
+    associatedtype OutputValue
+    
+    func get() -> OutputValue
     
 }
 
-extension ProviderProtocol {
-    
-    public var provider: Provider<OutputValue, InputValue> {
-        return Provider(get: self.get, set: self.set)
-    }
-    
-}
+public typealias ProviderProtocol = InputProviderProtocol & OutputProviderProtocol
 
 internal struct Synchronized<Value> {
     
