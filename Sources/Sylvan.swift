@@ -22,6 +22,8 @@
  *  SOFTWARE.
  */
 
+import Foundation
+
 public protocol ProviderProtocol {
     
     associatedtype OutputValue
@@ -42,8 +44,6 @@ extension ProviderProtocol {
     }
     
 }
-
-import Foundation
 
 internal struct Synchronized<Value> {
     

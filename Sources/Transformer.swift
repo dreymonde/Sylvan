@@ -22,52 +22,40 @@
  *  SOFTWARE.
  */
 
-public struct Transformer<A, B> {
-    
-    public let from: (A) -> B
-    public let to: (B) -> A
-    
-    public init(from: @escaping (A) -> B, to: @escaping (B) -> A) {
-        self.from = from
-        self.to = to
-    }
-    
-    public var reversed: Transformer<B, A> {
-        return Transformer<B, A>(from: self.to, to: self.from)
-    }
-    
-}
-
-public struct OptionalTransformer<A, B> {
-    
-    public let from: (A) -> B?
-    public let to: (B) -> A
-    
-    public init(from: @escaping (A) -> B?, to: @escaping (B) -> A) {
-        self.from = from
-        self.to = to
-    }
-    
-}
-
-public enum Transformers { }
-
-public extension Transformers {
-    
-    static func unwrap<Value>(with nonOptionalValueGetter: @escaping () -> Value) -> Transformer<Value?, Value> {
-        return Transformer(from: { $0 ?? nonOptionalValueGetter() }, to: { $0 })
-    }
-    
-}
-
-public extension Transformer {
-    
-    var optional: Transformer<A?, B?> {
-        return Transformer<A?, B?>(from: { (a) -> B? in
-            return a.map(self.from)
-        }, to: { (b) -> A? in
-            return b.map(self.to)
-        })
-    }
-    
-}
+//public struct Transformer<A, B> {
+//    
+//    public let from: (A) -> B
+//    public let to: (B) -> A
+//    
+//    public init(from: @escaping (A) -> B, to: @escaping (B) -> A) {
+//        self.from = from
+//        self.to = to
+//    }
+//    
+//    public var reversed: Transformer<B, A> {
+//        return Transformer<B, A>(from: self.to, to: self.from)
+//    }
+//    
+//}
+//
+//public enum Transformers { }
+//
+//public extension Transformers {
+//    
+//    static func unwrap<Value>(with nonOptionalValueGetter: @escaping () -> Value) -> Transformer<Value?, Value> {
+//        return Transformer(from: { $0 ?? nonOptionalValueGetter() }, to: { $0 })
+//    }
+//    
+//}
+//
+//public extension Transformer {
+//    
+//    var optional: Transformer<A?, B?> {
+//        return Transformer<A?, B?>(from: { (a) -> B? in
+//            return a.map(self.from)
+//        }, to: { (b) -> A? in
+//            return b.map(self.to)
+//        })
+//    }
+//    
+//}
