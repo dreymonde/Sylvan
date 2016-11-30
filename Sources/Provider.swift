@@ -42,10 +42,14 @@ public struct Provider<OutputValue, InputValue> {
         return try _set(value)
     }
     
-    public func ungaranteedSet(_ value: InputValue) {
+    @discardableResult
+    public func ungaranteedSet(_ value: InputValue) -> Bool {
         do {
             try _set(value)
-        } catch { }
+            return true
+        } catch {
+            return false
+        }
     }
     
     public var value: OutputValue {
