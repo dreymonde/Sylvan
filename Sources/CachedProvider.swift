@@ -69,10 +69,14 @@ public class CachedProvider<Value> {
         }
     }
     
-    public func ungaranteedSet(_ value: Value, toCacheOnly: Bool = false) {
+    @discardableResult
+    public func ungaranteedSet(_ value: Value, toCacheOnly: Bool = false) -> Bool {
         do {
             try set(value, toCacheOnly: toCacheOnly)
-        } catch { }
+            return true
+        } catch {
+            return false
+        }
     }
     
     public func pushCache() throws {
