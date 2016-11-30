@@ -93,7 +93,7 @@ public struct Provider<OutputValue, InputValue> {
         self.input = InputProvider(set)
     }
     
-    public init<Prov : ProviderProtocol>(provider: Prov) where Prov.InputValue == InputValue, Prov.OutputValue == OutputValue {
+    public init<Prov : ProviderProtocol>(_ provider: Prov) where Prov.InputValue == InputValue, Prov.OutputValue == OutputValue {
         self.init(get: provider.get, set: provider.set)
     }
     

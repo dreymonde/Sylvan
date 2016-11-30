@@ -52,10 +52,15 @@ public class CachedProvider<Value> {
     }
     
     @discardableResult
-    public func reloadCache() -> Value {
+    fileprivate func reloadCache() -> Value {
         let value = _get()
         cachedValue = value
         return value
+    }
+    
+    public func reloadCache() {
+        let value = _get()
+        cachedValue = value
     }
     
     public func clearCache() {

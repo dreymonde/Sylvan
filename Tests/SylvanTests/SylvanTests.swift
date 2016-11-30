@@ -76,6 +76,42 @@ class SylvanTests: XCTestCase {
         }
         waitForExpectations(timeout: 5.0)
     }
+    
+    class ExProvider : ProviderProtocol {
+        func get() -> Int {
+            return 5
+        }
+        func set(_ value: Int) throws {
+            print(value)
+        }
+    }
+    
+    func testExampleProviderProtocol() {
+        let example = ExProvider()
+        let provider = Provider(example)
+        XCTAssertEqual(provider.get(), 5)
+        provider.ungaranteedSet(17)
+    }
+    
+    func testCached() {
+        let inMem = Providers.inMemory(initial: 10)
+        let cachedProvider = CachedProvider(provider: inMem)
+        XCTAssertEqual(cachedProvider.get(), 10)
+        cachedProvider.ungaranteedSet(17)
+        XCTAssertEqual(cachedProvider.cachedValue!, 17)
+        XCTAssertEqual(cachedProvider.get(), 17)
+        cachedProvider.clearCache()
+        XCTAssertNil(cachedProvider.cachedValue)
+        cachedProvider.reloadCache()
+        XCTAssertEqual(cachedProvider.cachedValue!, 17)
+        cachedProvider.ungaranteedSet(22, toCacheOnly: true)
+        XCTAssertEqual(cachedProvider.cachedValue!, 22)
+        cachedProvider.reloadCache()
+        XCTAssertNotEqual(cachedProvider.get(), 22)
+        cachedProvider.ungaranteedSet(23, toCacheOnly: true)
+        try! cachedProvider.pushCache()
+        XCTAssertEqual(cachedProvider.get(), 23)
+    }
         
 }
 

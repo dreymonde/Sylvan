@@ -94,6 +94,10 @@ public struct AsyncProvider<OutputValue, InputValue> {
         self.output = AsyncOutputProvider(get)
         self.input = AsyncInputProvider(set)
     }
+    
+    public init<AsyncProv : AsyncProviderProtocol>(_ asyncProvider: AsyncProv) where AsyncProv.OutputValue == OutputValue, AsyncProv.InputValue == InputValue {
+        self.init(get: asyncProvider.get, set: asyncProvider.set)
+    }
         
     public init(syncProvider: Provider<OutputValue, InputValue>, dispatchQueue: DispatchQueue) {
         self.output = AsyncOutputProvider { completion in

@@ -42,6 +42,24 @@ public protocol OutputProviderProtocol {
 
 public typealias ProviderProtocol = InputProviderProtocol & OutputProviderProtocol
 
+public protocol AsyncOutputProviderProtocol {
+    
+    associatedtype OutputValue
+    
+    func get(completion: (OutputValue) -> ())
+    
+}
+
+public protocol AsyncInputProviderProtocol {
+    
+    associatedtype InputValue
+    
+    func set(_ value: InputValue, completion: (Error?) -> ())
+    
+}
+
+public typealias AsyncProviderProtocol = AsyncOutputProviderProtocol & AsyncInputProviderProtocol
+
 internal struct Synchronized<Value> {
     
     fileprivate let accessQueue: DispatchQueue
