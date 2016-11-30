@@ -24,7 +24,7 @@
 
 import Foundation
 
-public class AsyncCachedProvider<Value> {
+public class CachedAsyncProvider<Value> {
     
     fileprivate let _get: (@escaping (Value) -> ()) -> Void
     fileprivate let _set: ((Value), @escaping (Error?) -> ()) -> Void

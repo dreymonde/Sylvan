@@ -68,6 +68,8 @@ public struct AsyncProvider<OutputValue, InputValue> {
     
 }
 
+public typealias IdenticalAsyncProvider<Value> = AsyncProvider<Value, Value>
+
 public extension AsyncProvider {
     
     func mapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue) -> AsyncProvider<OutputValue, OtherInputValue> {
@@ -102,6 +104,14 @@ public extension AsyncProvider {
         }, set: { (value, completion) in
             self._set(inputTransform(value), completion)
         })
+    }
+    
+}
+
+public extension CachedAsyncProvider {
+    
+    convenience init(provider: IdenticalAsyncProvider<Value>) {
+        self.init(get: provider._get, set: provider._set)
     }
     
 }
