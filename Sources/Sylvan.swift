@@ -42,3 +42,33 @@ extension ProviderProtocol {
     }
     
 }
+
+import Foundation
+
+internal struct Synchronized<Value> {
+    
+    fileprivate let accessQueue: DispatchQueue
+    fileprivate var value: Value
+    
+    internal init(_ value: Value, queueLabel: String = "\(Value.self)SynchronizedQueue") {
+        self.value = value
+        self.accessQueue = DispatchQueue(label: queueLabel)
+    }
+    
+    internal func get() -> Value {
+        return accessQueue.sync(execute: { return value })
+    }
+    
+    internal mutating func set(_ value: Value) {
+        accessQueue.sync {
+            self.value = value
+        }
+    }
+    
+    internal mutating func set(_ change: (inout Value) -> ()) {
+        accessQueue.sync {
+            change(&value)
+        }
+    }
+    
+}

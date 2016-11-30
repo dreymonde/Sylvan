@@ -27,24 +27,26 @@ import Foundation
 public class AsyncCachedProvider<Value> {
     
     fileprivate let _get: (@escaping (Value) -> ()) -> Void
-    fileprivate let _set: ((Value), @escaping () -> ()) -> Void
-    
-    fileprivate let queue = DispatchQueue(label: "AsyncCachedProvider\(Value.self)")
+    fileprivate let _set: ((Value), @escaping (Error?) -> ()) -> Void
     
     public init(get: @escaping (@escaping (Value) -> ()) -> Void,
-                set: @escaping ((Value), @escaping () -> ()) -> Void) {
+                set: @escaping ((Value), @escaping (Error?) -> ()) -> Void) {
         self._get = get
         self._set = set
     }
     
-    fileprivate(set) public var cachedValue: Value?
+    fileprivate(set) internal var cached: Synchronized<Value?> = .init(nil)
+    
+    public var cachedValue: Value? {
+        return cached.get()
+    }
     
     public func get(reloadingCache: Bool = false, completion: @escaping (Value) -> ()) {
         if reloadingCache {
             reloadCache(completion: completion)
             return
         }
-        if let cachedValue = cachedValue {
+        if let cachedValue = cached.get() {
             completion(cachedValue)
         } else {
             reloadCache(completion: completion)
@@ -52,45 +54,38 @@ public class AsyncCachedProvider<Value> {
     }
     
     public func reloadCache(completion: @escaping (Value) -> ()) {
-        queue.async {
-            self._get { [unowned self] newValue in
-                self.cachedValue = newValue
-                completion(newValue)
-            }
+        self._get { [unowned self] newValue in
+            self.cached.set(newValue)
+            completion(newValue)
         }
     }
     
-    public func set(_ value: Value, completion: (() -> ())? = nil) {
-        queue.async {
-            self.cachedValue = value
-            self.sync_pushCache(completion: completion ?? { })
-        }
+    public func set(_ value: Value, completion: @escaping (Error?) -> () = { _ in }) {
+        self.cached.set(value)
+        self.pushCache(completion: completion)
     }
     
-    public func set(with mutation: @escaping (inout Value) -> (), completion: (() -> ())? = nil) {
+    public func ungaranteedSet(_ value: Value, completion: @escaping () -> () = { }) {
+        _set(value, { _ in completion() })
+    }
+    
+    public func set(with mutation: @escaping (inout Value) -> (), completion: @escaping (Error?) -> () = { _ in }) {
         get { (existing) in
             var mutable = existing
             mutation(&mutable)
-            self.cachedValue = mutable
-            self.sync_pushCache(completion: completion ?? { })
+            self.cached.set(mutable)
+            self.pushCache(completion: completion)
         }
     }
     
-    private func sync_pushCache(completion: @escaping () -> ()) {
-        if let cachedValue = self.cachedValue {
-            self._set(cachedValue, {  })
-            completion()
-            return
+    public func pushCache(completion: @escaping (Error?) -> ()) {
+        if let cached = cached.get() {
+            self._set(cached, completion)
         }
-        completion()
-    }
-    
-    public func pushCache(completion: @escaping () -> ()) {
-        queue.async { self.sync_pushCache(completion: completion) }
     }
     
     public func clearCached() {
-        cachedValue = nil
+        cached.set(nil)
     }
     
 }
