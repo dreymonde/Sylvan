@@ -24,28 +24,87 @@
 
 import Foundation
 
-public struct Provider<OutputValue, InputValue> {
+public struct OutputProvider<Value> {
     
-    fileprivate let _get: () -> OutputValue
-    fileprivate let _set: (InputValue) throws -> ()
+    fileprivate let _get: () -> Value
     
-    public init(get: @escaping () -> OutputValue, set: @escaping (InputValue) throws -> ()) {
+    public init(_ get: @escaping () -> Value) {
         self._get = get
-        self._set = set
     }
     
-    public func get() -> OutputValue {
+    public func get() -> Value {
         return _get()
     }
     
-    public func set(_ value: InputValue) throws {
+}
+
+public extension OutputProvider {
+    
+    public func map<OtherValue>(_ transform: @escaping (Value) -> OtherValue) -> OutputProvider<OtherValue> {
+        return OutputProvider<OtherValue>({ transform(self.get()) })
+    }
+    
+}
+
+public struct InputProvider<Value> {
+    
+    fileprivate let _set: (Value) throws -> ()
+    
+    public init(_ set: @escaping (Value) throws -> ()) {
+        self._set = set
+    }
+    
+    public func set(_ value: Value) throws {
         return try _set(value)
+    }
+    
+    @discardableResult
+    public func ungaranteedSet(_ value: Value) -> Bool {
+        do {
+            try set(value)
+            return true
+        } catch {
+            return false
+        }
+    }
+    
+}
+
+public extension InputProvider {
+    
+    public func map<OtherValue>(_ transform: @escaping (OtherValue) -> Value) -> InputProvider<OtherValue> {
+        return InputProvider<OtherValue>({ try self.set(transform($0)) })
+    }
+    
+}
+
+public struct Provider<OutputValue, InputValue> {
+    
+    public let output: OutputProvider<OutputValue>
+    public let input: InputProvider<InputValue>
+    
+    public init(get: OutputProvider<OutputValue>, input: InputProvider<InputValue>) {
+        self.output = get
+        self.input = input
+    }
+    
+    public init(get: @escaping () -> OutputValue, set: @escaping (InputValue) throws -> ()) {
+        self.output = OutputProvider(get)
+        self.input = InputProvider(set)
+    }
+    
+    public func get() -> OutputValue {
+        return output.get()
+    }
+    
+    public func set(_ value: InputValue) throws {
+        return try input.set(value)
     }
     
     @discardableResult
     public func ungaranteedSet(_ value: InputValue) -> Bool {
         do {
-            try _set(value)
+            try input.set(value)
             return true
         } catch {
             return false
@@ -53,9 +112,7 @@ public struct Provider<OutputValue, InputValue> {
     }
     
     public var value: OutputValue {
-        get {
-            return get()
-        }
+        return get()
     }
     
 }
@@ -69,27 +126,24 @@ extension Provider {
     }
     
     public func mapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue) -> Provider<OutputValue, OtherInputValue> {
-        return Provider<OutputValue, OtherInputValue>(get: self._get,
-                                                      set: { try self._set(transform($0)) })
+        return Provider<OutputValue, OtherInputValue>(get: output, input: input.map(transform))
     }
     
     public func flatMapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue?) -> Provider<OutputValue, OtherInputValue> {
-        return Provider<OutputValue, OtherInputValue>(get: self._get,
-                                                      set: { try self._set(try transform($0).tryUnwrap()) })
+        return Provider<OutputValue, OtherInputValue>(get: self.get,
+                                                      set: { try self.set(try transform($0).tryUnwrap()) })
     }
     
     public func mapOutput<OtherOutputValue>(_ transform: @escaping (OutputValue) -> OtherOutputValue) -> Provider<OtherOutputValue, InputValue> {
-        return Provider<OtherOutputValue, InputValue>(get: { transform(self._get()) },
-                                                      set: self._set)
+        return Provider<OtherOutputValue, InputValue>(get: output.map(transform), input: input)
     }
     
     public func map<OtherOutputValue, OtherInputValue>(outputTransform: @escaping (OutputValue) -> OtherOutputValue, inputTransform: @escaping (OtherInputValue) -> InputValue) -> Provider<OtherOutputValue, OtherInputValue> {
-        return Provider<OtherOutputValue, OtherInputValue>(get: { outputTransform(self._get()) },
-                                                           set: { try self._set(inputTransform($0)) })
+        return Provider<OtherOutputValue, OtherInputValue>(get: output.map(outputTransform), input: input.map(inputTransform))
     }
     
     public func cached(_ outputTransform: @escaping (OutputValue) -> InputValue) -> CachedProvider<OutputValue> {
-        return CachedProvider<OutputValue>(get: self._get, set: { try self._set(outputTransform($0)) })
+        return CachedProvider<OutputValue>(get: self.get, set: { try self.set(outputTransform($0)) })
     }
     
 }
@@ -97,7 +151,7 @@ extension Provider {
 public extension CachedProvider {
     
     convenience init(provider: IdenticalProvider<Value>) {
-        self.init(get: provider._get, set: provider._set)
+        self.init(get: provider.get, set: provider.set)
     }
     
 }
