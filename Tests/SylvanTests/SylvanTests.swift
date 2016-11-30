@@ -27,6 +27,7 @@ import XCTest
 import Sylvan
 
 class SylvanTests: XCTestCase {
+    
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
@@ -52,7 +53,7 @@ class SylvanTests: XCTestCase {
     func testInMemoryBasicAsync() {
         let provider = Providers.inMemory(initial: 10).async(dispatchQueue: .global())
         let expectation = self.expectation(description: "onprovider")
-        provider.ungaranteedSet(15) {
+        provider.set(15) { _ in
             provider.get { number in
                 XCTAssertEqual(number, 15)
                 expectation.fulfill()
@@ -64,19 +65,14 @@ class SylvanTests: XCTestCase {
     func testMapAsync() {
         let intProvider = Providers.inMemory(initial: 10).async(dispatchQueue: .global())
         let stringProvider = intProvider
-            .flatMapInput({ Int($0) })
+            .mapInput({ Int($0)! })
             .mapOutput({ String($0) })
         let expectation = self.expectation(description: "onprov")
-        stringProvider.ungaranteedSet("19") {
+        stringProvider.set("19") { _ in
             stringProvider.get { string in
                 XCTAssertEqual(string, "19")
                 expectation.fulfill()
             }
-        }
-        let expectation2 = self.expectation(description: "onprov2")
-        stringProvider.set("Alba") { error in
-            XCTAssertNotNil(error)
-            expectation2.fulfill()
         }
         waitForExpectations(timeout: 5.0)
     }
