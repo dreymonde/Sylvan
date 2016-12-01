@@ -24,7 +24,7 @@
 
 import Foundation
 
-public class CachedProvider<Value> {
+public final class CachedProvider<Value> {
     
     fileprivate var _get: () -> Value
     fileprivate var _set: (Value) throws -> ()

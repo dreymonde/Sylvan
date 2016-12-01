@@ -62,8 +62,8 @@ public typealias AsyncProviderProtocol = AsyncOutputProviderProtocol & AsyncInpu
 
 internal struct Synchronized<Value> {
     
-    fileprivate let accessQueue: DispatchQueue
-    fileprivate var value: Value
+    private let accessQueue: DispatchQueue
+    private var value: Value
     
     internal init(_ value: Value, queueLabel: String = "\(Value.self)SynchronizedQueue") {
         self.value = value
