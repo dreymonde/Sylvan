@@ -158,6 +158,19 @@ public extension AsyncProvider {
     
 }
 
+public extension AsyncProvider {
+    
+    func synchronized() -> AsyncProvider<OutputValue, InputValue> {
+        let queue = DispatchQueue(label: "\(self)-SynchronizationQueue")
+        return AsyncProvider<OutputValue, InputValue>(get: { (completion) in
+            queue.async { self.get(completion: completion) }
+        }, set: { (value, completion) in
+            queue.async { self.set(value, completion: completion) }
+        })
+    }
+    
+}
+
 public extension CachedAsyncProvider {
     
     convenience init(_ provider: IdenticalAsyncProvider<Value>) {
@@ -165,16 +178,3 @@ public extension CachedAsyncProvider {
     }
     
 }
-
-//public extension AsyncProvider {
-//    
-//    func map<OtherValue>(_ transform: Transformer<Value, OtherValue>) -> AsyncProvider<OtherValue> {
-//        return AsyncProvider<OtherValue>(get: { (completion) in
-//            self.get(completion: { completion(transform.from($0)) })
-//        }, set: { (value, completion) in
-//            self.set(transform.to(value), completion: completion)
-//        })
-//    }
-//    
-//}
-
