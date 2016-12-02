@@ -95,7 +95,7 @@ class SylvanTests: XCTestCase {
     
     func testCached() {
         let inMem = Providers.inMemory(initial: 10)
-        let cachedProvider = CachedProvider(provider: inMem)
+        let cachedProvider = CachedProvider(inMem)
         XCTAssertEqual(cachedProvider.get(), 10)
         cachedProvider.ungaranteedSet(17)
         XCTAssertEqual(cachedProvider.cachedValue!, 17)

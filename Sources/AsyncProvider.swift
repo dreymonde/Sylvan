@@ -160,7 +160,7 @@ public extension AsyncProvider {
 
 public extension CachedAsyncProvider {
     
-    convenience init(provider: IdenticalAsyncProvider<Value>) {
+    convenience init(_ provider: IdenticalAsyncProvider<Value>) {
         self.init(get: provider.output.get, set: provider.input.set)
     }
     

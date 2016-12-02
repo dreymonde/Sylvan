@@ -150,7 +150,7 @@ extension Provider {
 
 public extension CachedProvider {
     
-    convenience init(provider: IdenticalProvider<Value>) {
+    convenience init(_ provider: IdenticalProvider<Value>) {
         self.init(get: provider.get, set: provider.set)
     }
     
