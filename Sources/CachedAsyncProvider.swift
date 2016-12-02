@@ -33,6 +33,17 @@ public final class CachedAsyncProvider<Value> {
                 set: @escaping ((Value), @escaping (Error?) -> ()) -> Void) {
         self._get = get
         self._set = set
+//        let queue = DispatchQueue.init(label: "Some")
+//        self._get = { completion in
+//            queue.async {
+//                get(completion)
+//            }
+//        }
+//        self._set = { value, completion in
+//            queue.async {
+//                set(value, completion)
+//            }
+//        }
     }
     
     fileprivate(set) internal var cached: Synchronized<Value?> = .init(nil)
@@ -66,7 +77,7 @@ public final class CachedAsyncProvider<Value> {
     }
     
     public func ungaranteedSet(_ value: Value, completion: @escaping () -> () = { }) {
-        _set(value, { _ in completion() })
+        set(value, completion: { _ in completion() })
     }
     
     public func set(with mutation: @escaping (inout Value) -> (), completion: @escaping (Error?) -> () = { _ in }) {
