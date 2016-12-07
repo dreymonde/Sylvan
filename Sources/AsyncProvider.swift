@@ -34,6 +34,10 @@ public struct AsyncOutputProvider<Value> {
         self._get = get
     }
     
+    public static func block(_ get: @escaping AsyncGet) -> AsyncOutputProvider<Value> {
+        return AsyncOutputProvider(get)
+    }
+    
     public func get(completion: @escaping (Value) -> ()) {
         _get(completion)
     }
@@ -60,6 +64,10 @@ public struct AsyncInputProvider<Value> {
     
     public init(_ set: @escaping AsyncSet) {
         self._set = set
+    }
+    
+    public static func block(_ set: @escaping AsyncSet) -> AsyncInputProvider<Value> {
+        return AsyncInputProvider(set)
     }
     
     public func set(_ value: Value, completion: @escaping (Error?) -> () = { _ in }) {

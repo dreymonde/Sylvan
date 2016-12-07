@@ -112,6 +112,13 @@ class SylvanTests: XCTestCase {
         try! cachedProvider.pushCache()
         XCTAssertEqual(cachedProvider.get(), 23)
     }
+    
+    func testBlocks() {
+        _ = OutputProvider.block { return 5 }
+        _ = InputProvider<Int>.block { _ in }
+        _ = AsyncOutputProvider.block { $0(5) }
+        _ = AsyncInputProvider<Int>.block { $1(nil) }
+    }
         
 }
 

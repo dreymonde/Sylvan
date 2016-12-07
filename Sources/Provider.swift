@@ -32,6 +32,10 @@ public struct OutputProvider<Value> {
         self._get = get
     }
     
+    public static func block(_ get: @escaping () -> Value) -> OutputProvider<Value> {
+        return OutputProvider(get)
+    }
+    
     public func get() -> Value {
         return _get()
     }
@@ -52,6 +56,10 @@ public struct InputProvider<Value> {
     
     public init(_ set: @escaping (Value) throws -> ()) {
         self._set = set
+    }
+    
+    public static func block(_ set: @escaping (Value) throws -> ()) -> InputProvider<Value> {
+        return InputProvider(set)
     }
     
     public func set(_ value: Value) throws {
