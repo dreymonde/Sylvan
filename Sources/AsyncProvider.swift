@@ -24,7 +24,7 @@
 
 import Foundation
 
-public struct AsyncOutputProvider<Value> {
+public struct AsyncGetter<Value> {
     
     public typealias AsyncGet = (@escaping (Value) -> ()) -> Void
     
@@ -34,8 +34,8 @@ public struct AsyncOutputProvider<Value> {
         self._get = get
     }
     
-    public static func block(_ get: @escaping AsyncGet) -> AsyncOutputProvider<Value> {
-        return AsyncOutputProvider(get)
+    public static func block(_ get: @escaping AsyncGet) -> AsyncGetter<Value> {
+        return AsyncGetter(get)
     }
     
     public func get(completion: @escaping (Value) -> ()) {
@@ -44,10 +44,10 @@ public struct AsyncOutputProvider<Value> {
     
 }
 
-public extension AsyncOutputProvider {
+public extension AsyncGetter {
     
-    func map<OtherValue>(_ transform: @escaping (Value) -> OtherValue) -> AsyncOutputProvider<OtherValue> {
-        return AsyncOutputProvider<OtherValue>({ (completion) in
+    func map<OtherValue>(_ transform: @escaping (Value) -> OtherValue) -> AsyncGetter<OtherValue> {
+        return AsyncGetter<OtherValue>({ (completion) in
             self.get(completion: { (value) in
                 completion(transform(value))
             })
@@ -88,10 +88,10 @@ public extension AsyncSetter {
 
 public struct AsyncProvider<OutputValue, InputValue> {
     
-    public let output: AsyncOutputProvider<OutputValue>
+    public let output: AsyncGetter<OutputValue>
     public let input: AsyncSetter<InputValue>
     
-    public init(get: AsyncOutputProvider<OutputValue>,
+    public init(get: AsyncGetter<OutputValue>,
                 set: AsyncSetter<InputValue>) {
         self.output = get
         self.input = set
@@ -99,7 +99,7 @@ public struct AsyncProvider<OutputValue, InputValue> {
     
     public init(get: @escaping (@escaping (OutputValue) -> ()) -> Void,
                 set: @escaping ((InputValue), @escaping (Error?) -> ()) -> Void) {
-        self.output = AsyncOutputProvider(get)
+        self.output = AsyncGetter(get)
         self.input = AsyncSetter(set)
     }
     
@@ -108,7 +108,7 @@ public struct AsyncProvider<OutputValue, InputValue> {
     }
         
     public init(syncProvider: Provider<OutputValue, InputValue>, dispatchQueue: DispatchQueue) {
-        self.output = AsyncOutputProvider { completion in
+        self.output = AsyncGetter { completion in
             dispatchQueue.async {
                 let value = syncProvider.get()
                 completion(value)

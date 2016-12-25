@@ -24,7 +24,7 @@
 
 import Foundation
 
-public struct OutputProvider<Value> {
+public struct Getter<Value> {
     
     fileprivate let _get: () -> Value
     
@@ -32,8 +32,8 @@ public struct OutputProvider<Value> {
         self._get = get
     }
     
-    public static func block(_ get: @escaping () -> Value) -> OutputProvider<Value> {
-        return OutputProvider(get)
+    public static func block(_ get: @escaping () -> Value) -> Getter<Value> {
+        return Getter(get)
     }
     
     public func get() -> Value {
@@ -42,10 +42,10 @@ public struct OutputProvider<Value> {
     
 }
 
-public extension OutputProvider {
+public extension Getter {
     
-    public func map<OtherValue>(_ transform: @escaping (Value) -> OtherValue) -> OutputProvider<OtherValue> {
-        return OutputProvider<OtherValue>({ transform(self.get()) })
+    public func map<OtherValue>(_ transform: @escaping (Value) -> OtherValue) -> Getter<OtherValue> {
+        return Getter<OtherValue>({ transform(self.get()) })
     }
     
 }
@@ -88,16 +88,16 @@ public extension Setter {
 
 public struct Provider<OutputValue, InputValue> {
     
-    public let output: OutputProvider<OutputValue>
+    public let output: Getter<OutputValue>
     public let input: Setter<InputValue>
     
-    public init(get: OutputProvider<OutputValue>, input: Setter<InputValue>) {
+    public init(get: Getter<OutputValue>, input: Setter<InputValue>) {
         self.output = get
         self.input = input
     }
     
     public init(get: @escaping () -> OutputValue, set: @escaping (InputValue) throws -> ()) {
-        self.output = OutputProvider(get)
+        self.output = Getter(get)
         self.input = Setter(set)
     }
     

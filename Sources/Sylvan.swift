@@ -32,7 +32,7 @@ public protocol SetterProtocol {
     
 }
 
-public protocol OutputProviderProtocol {
+public protocol GetterProtocol {
     
     associatedtype OutputValue
     
@@ -40,9 +40,9 @@ public protocol OutputProviderProtocol {
     
 }
 
-public typealias ProviderProtocol = SetterProtocol & OutputProviderProtocol
+public typealias ProviderProtocol = SetterProtocol & GetterProtocol
 
-public protocol AsyncOutputProviderProtocol {
+public protocol AsyncGetterProtocol {
     
     associatedtype OutputValue
     
@@ -58,7 +58,7 @@ public protocol AsyncSetterProtocol {
     
 }
 
-public typealias AsyncProviderProtocol = AsyncOutputProviderProtocol & AsyncSetterProtocol
+public typealias AsyncProviderProtocol = AsyncGetterProtocol & AsyncSetterProtocol
 
 internal struct Synchronized<Value> {
     
