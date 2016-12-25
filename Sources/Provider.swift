@@ -50,7 +50,7 @@ public extension OutputProvider {
     
 }
 
-public struct InputProvider<Value> {
+public struct Setter<Value> {
     
     fileprivate let _set: (Value) throws -> ()
     
@@ -58,8 +58,8 @@ public struct InputProvider<Value> {
         self._set = set
     }
     
-    public static func block(_ set: @escaping (Value) throws -> ()) -> InputProvider<Value> {
-        return InputProvider(set)
+    public static func block(_ set: @escaping (Value) throws -> ()) -> Setter<Value> {
+        return Setter(set)
     }
     
     public func set(_ value: Value) throws {
@@ -78,10 +78,10 @@ public struct InputProvider<Value> {
     
 }
 
-public extension InputProvider {
+public extension Setter {
     
-    public func map<OtherValue>(_ transform: @escaping (OtherValue) -> Value) -> InputProvider<OtherValue> {
-        return InputProvider<OtherValue>({ try self.set(transform($0)) })
+    public func map<OtherValue>(_ transform: @escaping (OtherValue) -> Value) -> Setter<OtherValue> {
+        return Setter<OtherValue>({ try self.set(transform($0)) })
     }
     
 }
@@ -89,16 +89,16 @@ public extension InputProvider {
 public struct Provider<OutputValue, InputValue> {
     
     public let output: OutputProvider<OutputValue>
-    public let input: InputProvider<InputValue>
+    public let input: Setter<InputValue>
     
-    public init(get: OutputProvider<OutputValue>, input: InputProvider<InputValue>) {
+    public init(get: OutputProvider<OutputValue>, input: Setter<InputValue>) {
         self.output = get
         self.input = input
     }
     
     public init(get: @escaping () -> OutputValue, set: @escaping (InputValue) throws -> ()) {
         self.output = OutputProvider(get)
-        self.input = InputProvider(set)
+        self.input = Setter(set)
     }
     
     public init<Prov : ProviderProtocol>(_ provider: Prov) where Prov.InputValue == InputValue, Prov.OutputValue == OutputValue {

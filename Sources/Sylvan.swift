@@ -24,7 +24,7 @@
 
 import Foundation
 
-public protocol InputProviderProtocol {
+public protocol SetterProtocol {
     
     associatedtype InputValue
     
@@ -40,7 +40,7 @@ public protocol OutputProviderProtocol {
     
 }
 
-public typealias ProviderProtocol = InputProviderProtocol & OutputProviderProtocol
+public typealias ProviderProtocol = SetterProtocol & OutputProviderProtocol
 
 public protocol AsyncOutputProviderProtocol {
     
@@ -50,7 +50,7 @@ public protocol AsyncOutputProviderProtocol {
     
 }
 
-public protocol AsyncInputProviderProtocol {
+public protocol AsyncSetterProtocol {
     
     associatedtype InputValue
     
@@ -58,7 +58,7 @@ public protocol AsyncInputProviderProtocol {
     
 }
 
-public typealias AsyncProviderProtocol = AsyncOutputProviderProtocol & AsyncInputProviderProtocol
+public typealias AsyncProviderProtocol = AsyncOutputProviderProtocol & AsyncSetterProtocol
 
 internal struct Synchronized<Value> {
     

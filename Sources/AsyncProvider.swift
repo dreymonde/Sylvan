@@ -56,7 +56,7 @@ public extension AsyncOutputProvider {
     
 }
 
-public struct AsyncInputProvider<Value> {
+public struct AsyncSetter<Value> {
     
     public typealias AsyncSet = ((Value), @escaping (Error?) -> ()) -> Void
     
@@ -66,8 +66,8 @@ public struct AsyncInputProvider<Value> {
         self._set = set
     }
     
-    public static func block(_ set: @escaping AsyncSet) -> AsyncInputProvider<Value> {
-        return AsyncInputProvider(set)
+    public static func block(_ set: @escaping AsyncSet) -> AsyncSetter<Value> {
+        return AsyncSetter(set)
     }
     
     public func set(_ value: Value, completion: @escaping (Error?) -> () = { _ in }) {
@@ -76,10 +76,10 @@ public struct AsyncInputProvider<Value> {
     
 }
 
-public extension AsyncInputProvider {
+public extension AsyncSetter {
     
-    func map<OtherValue>(_ transform: @escaping (OtherValue) -> Value) -> AsyncInputProvider<OtherValue> {
-        return AsyncInputProvider<OtherValue>({ (otherValue, completion) in
+    func map<OtherValue>(_ transform: @escaping (OtherValue) -> Value) -> AsyncSetter<OtherValue> {
+        return AsyncSetter<OtherValue>({ (otherValue, completion) in
             self.set(transform(otherValue), completion: completion)
         })
     }
@@ -89,10 +89,10 @@ public extension AsyncInputProvider {
 public struct AsyncProvider<OutputValue, InputValue> {
     
     public let output: AsyncOutputProvider<OutputValue>
-    public let input: AsyncInputProvider<InputValue>
+    public let input: AsyncSetter<InputValue>
     
     public init(get: AsyncOutputProvider<OutputValue>,
-                set: AsyncInputProvider<InputValue>) {
+                set: AsyncSetter<InputValue>) {
         self.output = get
         self.input = set
     }
@@ -100,7 +100,7 @@ public struct AsyncProvider<OutputValue, InputValue> {
     public init(get: @escaping (@escaping (OutputValue) -> ()) -> Void,
                 set: @escaping ((InputValue), @escaping (Error?) -> ()) -> Void) {
         self.output = AsyncOutputProvider(get)
-        self.input = AsyncInputProvider(set)
+        self.input = AsyncSetter(set)
     }
     
     public init<AsyncProv : AsyncProviderProtocol>(_ asyncProvider: AsyncProv) where AsyncProv.OutputValue == OutputValue, AsyncProv.InputValue == InputValue {
@@ -114,7 +114,7 @@ public struct AsyncProvider<OutputValue, InputValue> {
                 completion(value)
             }
         }
-        self.input = AsyncInputProvider { value, completion in
+        self.input = AsyncSetter { value, completion in
             dispatchQueue.async {
                 do {
                     try syncProvider.set(value)

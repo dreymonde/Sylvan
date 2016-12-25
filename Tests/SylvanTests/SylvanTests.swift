@@ -115,9 +115,9 @@ class SylvanTests: XCTestCase {
     
     func testBlocks() {
         _ = OutputProvider.block { return 5 }
-        _ = InputProvider<Int>.block { _ in }
+        _ = Setter<Int>.block { _ in }
         _ = AsyncOutputProvider.block { $0(5) }
-        _ = AsyncInputProvider<Int>.block { $1(nil) }
+        _ = AsyncSetter<Int>.block { $1(nil) }
     }
         
 }
