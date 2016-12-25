@@ -86,44 +86,44 @@ public extension Setter {
     
 }
 
-public struct Provider<OutputValue, InputValue> {
+public struct Provider<GetValue, SetValue> {
     
-    public let output: Getter<OutputValue>
-    public let input: Setter<InputValue>
+    public let getter: Getter<GetValue>
+    public let setter: Setter<SetValue>
     
-    public init(get: Getter<OutputValue>, input: Setter<InputValue>) {
-        self.output = get
-        self.input = input
+    public init(get: Getter<GetValue>, set: Setter<SetValue>) {
+        self.getter = get
+        self.setter = set
     }
     
-    public init(get: @escaping () -> OutputValue, set: @escaping (InputValue) throws -> ()) {
-        self.output = Getter(get)
-        self.input = Setter(set)
+    public init(get: @escaping () -> GetValue, set: @escaping (SetValue) throws -> ()) {
+        self.getter = Getter(get)
+        self.setter = Setter(set)
     }
     
-    public init<Prov : ProviderProtocol>(_ provider: Prov) where Prov.InputValue == InputValue, Prov.OutputValue == OutputValue {
+    public init<Prov : ProviderProtocol>(_ provider: Prov) where Prov.SetValue == SetValue, Prov.GetValue == GetValue {
         self.init(get: provider.get, set: provider.set)
     }
     
-    public func get() -> OutputValue {
-        return output.get()
+    public func get() -> GetValue {
+        return getter.get()
     }
     
-    public func set(_ value: InputValue) throws {
-        return try input.set(value)
+    public func set(_ value: SetValue) throws {
+        return try setter.set(value)
     }
     
     @discardableResult
-    public func ungaranteedSet(_ value: InputValue) -> Bool {
+    public func ungaranteedSet(_ value: SetValue) -> Bool {
         do {
-            try input.set(value)
+            try setter.set(value)
             return true
         } catch {
             return false
         }
     }
     
-    public var value: OutputValue {
+    public var value: GetValue {
         return get()
     }
     
@@ -133,25 +133,25 @@ public typealias IdenticalProvider<Value> = Provider<Value, Value>
 
 extension Provider {
     
-    public func async(dispatchQueue: DispatchQueue) -> AsyncProvider<OutputValue, InputValue> {
+    public func async(dispatchQueue: DispatchQueue) -> AsyncProvider<GetValue, SetValue> {
         return AsyncProvider(syncProvider: self, dispatchQueue: dispatchQueue)
     }
     
-    public func mapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue) -> Provider<OutputValue, OtherInputValue> {
-        return Provider<OutputValue, OtherInputValue>(get: output, input: input.map(transform))
+    public func mapSet<OtherSetValue>(_ transform: @escaping (OtherSetValue) -> SetValue) -> Provider<GetValue, OtherSetValue> {
+        return Provider<GetValue, OtherSetValue>(get: getter, set: setter.map(transform))
     }
     
-    public func flatMapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue?) -> Provider<OutputValue, OtherInputValue> {
-        return Provider<OutputValue, OtherInputValue>(get: self.get,
+    public func flatMapSet<OtherSetValue>(_ transform: @escaping (OtherSetValue) -> SetValue?) -> Provider<GetValue, OtherSetValue> {
+        return Provider<GetValue, OtherSetValue>(get: self.get,
                                                       set: { try self.set(try transform($0).tryUnwrap()) })
     }
     
-    public func mapOutput<OtherOutputValue>(_ transform: @escaping (OutputValue) -> OtherOutputValue) -> Provider<OtherOutputValue, InputValue> {
-        return Provider<OtherOutputValue, InputValue>(get: output.map(transform), input: input)
+    public func mapGet<OtherGetValue>(_ transform: @escaping (GetValue) -> OtherGetValue) -> Provider<OtherGetValue, SetValue> {
+        return Provider<OtherGetValue, SetValue>(get: getter.map(transform), set: setter)
     }
     
-    public func map<OtherOutputValue, OtherInputValue>(outputTransform: @escaping (OutputValue) -> OtherOutputValue, inputTransform: @escaping (OtherInputValue) -> InputValue) -> Provider<OtherOutputValue, OtherInputValue> {
-        return Provider<OtherOutputValue, OtherInputValue>(get: output.map(outputTransform), input: input.map(inputTransform))
+    public func map<OtherGetValue, OtherSetValue>(outputTransform: @escaping (GetValue) -> OtherGetValue, inputTransform: @escaping (OtherSetValue) -> SetValue) -> Provider<OtherGetValue, OtherSetValue> {
+        return Provider<OtherGetValue, OtherSetValue>(get: getter.map(outputTransform), set: setter.map(inputTransform))
     }
         
 }

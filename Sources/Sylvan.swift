@@ -26,17 +26,17 @@ import Foundation
 
 public protocol SetterProtocol {
     
-    associatedtype InputValue
+    associatedtype SetValue
     
-    func set(_ value: InputValue) throws
+    func set(_ value: SetValue) throws
     
 }
 
 public protocol GetterProtocol {
     
-    associatedtype OutputValue
+    associatedtype GetValue
     
-    func get() -> OutputValue
+    func get() -> GetValue
     
 }
 
@@ -44,17 +44,17 @@ public typealias ProviderProtocol = SetterProtocol & GetterProtocol
 
 public protocol AsyncGetterProtocol {
     
-    associatedtype OutputValue
+    associatedtype GetValue
     
-    func get(completion: (OutputValue) -> ())
+    func get(completion: (GetValue) -> ())
     
 }
 
 public protocol AsyncSetterProtocol {
     
-    associatedtype InputValue
+    associatedtype SetValue
     
-    func set(_ value: InputValue, completion: (Error?) -> ())
+    func set(_ value: SetValue, completion: (Error?) -> ())
     
 }
 

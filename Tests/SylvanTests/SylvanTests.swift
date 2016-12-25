@@ -43,8 +43,8 @@ class SylvanTests: XCTestCase {
     func testMap() {
         let intProvider = Providers.inMemory(initial: 10)
         let stringProvider = intProvider
-            .flatMapInput({ Int($0) })
-            .mapOutput({ String($0) })
+            .flatMapSet({ Int($0) })
+            .mapGet({ String($0) })
         stringProvider.ungaranteedSet("19")
         XCTAssertEqual(stringProvider.get(), "19")
         XCTAssertThrowsError(try stringProvider.set("Alba"))
@@ -65,8 +65,8 @@ class SylvanTests: XCTestCase {
     func testMapAsync() {
         let intProvider = Providers.inMemory(initial: 10).async(dispatchQueue: .global())
         let stringProvider = intProvider
-            .mapInput({ Int($0)! })
-            .mapOutput({ String($0) })
+            .mapSet({ Int($0)! })
+            .mapGet({ String($0) })
         let expectation = self.expectation(description: "onprov")
         stringProvider.set("19") { _ in
             stringProvider.get { string in

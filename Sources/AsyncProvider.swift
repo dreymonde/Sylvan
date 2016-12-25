@@ -86,28 +86,28 @@ public extension AsyncSetter {
     
 }
 
-public struct AsyncProvider<OutputValue, InputValue> {
+public struct AsyncProvider<GetValue, SetValue> {
     
-    public let output: AsyncGetter<OutputValue>
-    public let input: AsyncSetter<InputValue>
+    public let output: AsyncGetter<GetValue>
+    public let input: AsyncSetter<SetValue>
     
-    public init(get: AsyncGetter<OutputValue>,
-                set: AsyncSetter<InputValue>) {
+    public init(get: AsyncGetter<GetValue>,
+                set: AsyncSetter<SetValue>) {
         self.output = get
         self.input = set
     }
     
-    public init(get: @escaping (@escaping (OutputValue) -> ()) -> Void,
-                set: @escaping ((InputValue), @escaping (Error?) -> ()) -> Void) {
+    public init(get: @escaping (@escaping (GetValue) -> ()) -> Void,
+                set: @escaping ((SetValue), @escaping (Error?) -> ()) -> Void) {
         self.output = AsyncGetter(get)
         self.input = AsyncSetter(set)
     }
     
-    public init<AsyncProv : AsyncProviderProtocol>(_ asyncProvider: AsyncProv) where AsyncProv.OutputValue == OutputValue, AsyncProv.InputValue == InputValue {
+    public init<AsyncProv : AsyncProviderProtocol>(_ asyncProvider: AsyncProv) where AsyncProv.GetValue == GetValue, AsyncProv.SetValue == SetValue {
         self.init(get: asyncProvider.get, set: asyncProvider.set)
     }
         
-    public init(syncProvider: Provider<OutputValue, InputValue>, dispatchQueue: DispatchQueue) {
+    public init(syncProvider: Provider<GetValue, SetValue>, dispatchQueue: DispatchQueue) {
         self.output = AsyncGetter { completion in
             dispatchQueue.async {
                 let value = syncProvider.get()
@@ -126,11 +126,11 @@ public struct AsyncProvider<OutputValue, InputValue> {
         }
     }
     
-    public func get(completion: @escaping (OutputValue) -> ()) {
+    public func get(completion: @escaping (GetValue) -> ()) {
         output.get(completion: completion)
     }
     
-    public func set(_ value: InputValue, completion: @escaping (Error?) -> () = { _ in }) {
+    public func set(_ value: SetValue, completion: @escaping (Error?) -> () = { _ in }) {
         input.set(value, completion: completion)
     }
     
@@ -140,12 +140,12 @@ public typealias IdenticalAsyncProvider<Value> = AsyncProvider<Value, Value>
 
 public extension AsyncProvider {
     
-    func mapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue) -> AsyncProvider<OutputValue, OtherInputValue> {
-        return AsyncProvider<OutputValue, OtherInputValue>(get: output, set: input.map(transform))
+    func mapSet<OtherSetValue>(_ transform: @escaping (OtherSetValue) -> SetValue) -> AsyncProvider<GetValue, OtherSetValue> {
+        return AsyncProvider<GetValue, OtherSetValue>(get: output, set: input.map(transform))
     }
     
-//    func flatMapInput<OtherInputValue>(_ transform: @escaping (OtherInputValue) -> InputValue?) -> AsyncProvider<OutputValue, OtherInputValue> {
-//        return AsyncProvider<OutputValue, OtherInputValue>(get: self.output,
+//    func flatMapSet<OtherSetValue>(_ transform: @escaping (OtherSetValue) -> SetValue?) -> AsyncProvider<GetValue, OtherSetValue> {
+//        return AsyncProvider<GetValue, OtherSetValue>(get: self.output,
 //                                                           set: { (value, completion) in
 //                                                            do {
 //                                                                let value = try transform(value).tryUnwrap()
@@ -156,21 +156,21 @@ public extension AsyncProvider {
 //        })
 //    }
     
-    func mapOutput<OtherOutputValue>(_ transform: @escaping (OutputValue) -> OtherOutputValue) -> AsyncProvider<OtherOutputValue, InputValue> {
-        return AsyncProvider<OtherOutputValue, InputValue>(get: output.map(transform), set: input)
+    func mapGet<OtherGetValue>(_ transform: @escaping (GetValue) -> OtherGetValue) -> AsyncProvider<OtherGetValue, SetValue> {
+        return AsyncProvider<OtherGetValue, SetValue>(get: output.map(transform), set: input)
     }
     
-    func map<OtherOutputValue, OtherInputValue>(_ outputTransform: @escaping (OutputValue) -> OtherOutputValue, inputTransform: @escaping (OtherInputValue) -> InputValue) -> AsyncProvider<OtherOutputValue, OtherInputValue> {
-        return AsyncProvider<OtherOutputValue, OtherInputValue>(get: output.map(outputTransform), set: input.map(inputTransform))
+    func map<OtherGetValue, OtherSetValue>(_ outputTransform: @escaping (GetValue) -> OtherGetValue, inputTransform: @escaping (OtherSetValue) -> SetValue) -> AsyncProvider<OtherGetValue, OtherSetValue> {
+        return AsyncProvider<OtherGetValue, OtherSetValue>(get: output.map(outputTransform), set: input.map(inputTransform))
     }
     
 }
 
 public extension AsyncProvider {
     
-    func synchronized() -> AsyncProvider<OutputValue, InputValue> {
+    func synchronized() -> AsyncProvider<GetValue, SetValue> {
         let queue = DispatchQueue(label: "\(self)-SynchronizationQueue")
-        return AsyncProvider<OutputValue, InputValue>(get: { (completion) in
+        return AsyncProvider<GetValue, SetValue>(get: { (completion) in
             queue.async { self.get(completion: completion) }
         }, set: { (value, completion) in
             queue.async { self.set(value, completion: completion) }
