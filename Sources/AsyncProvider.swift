@@ -38,6 +38,10 @@ public struct AsyncGetter<Value> {
         return AsyncGetter(get)
     }
     
+    public static func value(_ value: Value) -> AsyncGetter<Value> {
+        return AsyncGetter({ $0(value) })
+    }
+    
     public func get(completion: @escaping (Value) -> ()) {
         _get(completion)
     }
