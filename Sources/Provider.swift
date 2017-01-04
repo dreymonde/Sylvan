@@ -36,6 +36,10 @@ public struct Getter<Value> {
         return Getter(get)
     }
     
+    public static func value(_ value: Value) -> Getter<Value> {
+        return Getter({ value })
+    }
+    
     public func get() -> Value {
         return _get()
     }
